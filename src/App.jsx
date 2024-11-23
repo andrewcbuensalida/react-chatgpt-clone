@@ -12,7 +12,7 @@ function App() {
   const [text, setText] = useState('');
   const [message, setMessage] = useState(null);
   const [previousChats, setPreviousChats] = useState([]);
-  const [localChats, setLocalChats] = useState([]);
+  const [chatsToday, setChatsToday] = useState([]);
   const [currentTitle, setCurrentTitle] = useState(null);
   const [isResponseLoading, setIsResponseLoading] = useState(false);
   const [errorText, setErrorText] = useState('');
@@ -37,7 +37,6 @@ function App() {
 
   const submitHandler = async (e) => {
     e.preventDefault();
-    return setErrorText('My billing plan is gone because of many requests.');
     if (!text) return;
 
     setIsResponseLoading(true);
@@ -107,14 +106,6 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const storedChats = localStorage.getItem('previousChats');
-
-    if (storedChats) {
-      setLocalChats(JSON.parse(storedChats));
-    }
-  }, []);
-
-  useEffect(() => {
     if (!currentTitle && text && message) {
       setCurrentTitle(text);
     }
@@ -133,185 +124,210 @@ function App() {
       };
 
       setPreviousChats((prevChats) => [...prevChats, newChat, responseMessage]);
-      setLocalChats((prevChats) => [...prevChats, newChat, responseMessage]);
-
-      const updatedChats = [...localChats, newChat, responseMessage];
-      localStorage.setItem('previousChats', JSON.stringify(updatedChats));
+      setChatsToday((prevChats) => [...prevChats, newChat, responseMessage]);
     }
   }, [message, currentTitle]);
 
-  const currentChat = (localChats || previousChats).filter(
+  const currentChat = (chatsToday || previousChats).filter(
     (prevChat) => prevChat.title === currentTitle
   );
 
-  const uniqueTitles = Array.from(
-    new Set(previousChats.map((prevChat) => prevChat.title).reverse())
-  );
-
-  const localUniqueTitles = Array.from(
-    new Set(localChats.map((prevChat) => prevChat.title).reverse())
-  ).filter((title) => !uniqueTitles.includes(title));
-
   return (
-    <>
-      <div className='container'>
-        <section className={`sidebar ${isShowSidebar ? 'open' : ''}`}>
-          <div className='sidebar-header' onClick={createNewChat} role='button'>
-            <BiPlus size={20} />
-            <button>New Chat</button>
-          </div>
-          <div className='sidebar-history'>
-            {uniqueTitles.length > 0 && previousChats.length !== 0 && (
-              <>
-                <p>Ongoing</p>
-                <ul>
-                  {uniqueTitles?.map((uniqueTitle, idx) => {
-                    const listItems = document.querySelectorAll('li');
+		<>
+			<div className="container">
+				<section className={`sidebar ${isShowSidebar ? "open" : ""}`}>
+					<div
+						className="sidebar-header"
+						onClick={createNewChat}
+						role="button"
+					>
+						<BiPlus size={20} />
+						<button>New Chat</button>
+					</div>
+					<div className="sidebar-history">
+						{chatsToday.length !== 0 && (
+							<>
+								<p>Ongoing</p>
+								<ul>
+									{chatsToday?.map((chat, idx) => {
+										const listItems =
+											document.querySelectorAll("li");
 
-                    listItems.forEach((item) => {
-                      if (item.scrollWidth > item.clientWidth) {
-                        item.classList.add('li-overflow-shadow');
-                      }
-                    });
+										listItems.forEach((item) => {
+											if (
+												item.scrollWidth >
+												item.clientWidth
+											) {
+												item.classList.add(
+													"li-overflow-shadow"
+												);
+											}
+										});
 
-                    return (
-                      <li
-                        key={idx}
-                        onClick={() => backToHistoryPrompt(uniqueTitle)}
-                      >
-                        {uniqueTitle}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </>
-            )}
-            {localUniqueTitles.length > 0 && localChats.length !== 0 && (
-              <>
-                <p>Previous</p>
-                <ul>
-                  {localUniqueTitles?.map((uniqueTitle, idx) => {
-                    const listItems = document.querySelectorAll('li');
+										return (
+											<li
+												key={idx}
+												onClick={() =>
+													backToHistoryPrompt(chat)
+												}
+											>
+												{chat}
+											</li>
+										);
+									})}
+								</ul>
+							</>
+						)}
+						{previousChats.length !== 0 && (
+							<>
+								<p>Previous</p>
+								<ul>
+									{previousChats?.map((chat, idx) => {
+										const listItems =
+											document.querySelectorAll("li");
 
-                    listItems.forEach((item) => {
-                      if (item.scrollWidth > item.clientWidth) {
-                        item.classList.add('li-overflow-shadow');
-                      }
-                    });
+										listItems.forEach((item) => {
+											if (
+												item.scrollWidth >
+												item.clientWidth
+											) {
+												item.classList.add(
+													"li-overflow-shadow"
+												);
+											}
+										});
 
-                    return (
-                      <li
-                        key={idx}
-                        onClick={() => backToHistoryPrompt(uniqueTitle)}
-                      >
-                        {uniqueTitle}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </>
-            )}
-          </div>
-          <div className='sidebar-info'>
-            <div className='sidebar-info-upgrade'>
-              <BiUser size={20} />
-              <p>Upgrade plan</p>
-            </div>
-            <div className='sidebar-info-user'>
-              <BiSolidUserCircle size={20} />
-              <p>User</p>
-            </div>
-          </div>
-        </section>
+										return (
+											<li
+												key={idx}
+												onClick={() =>
+													backToHistoryPrompt(
+														chat
+													)
+												}
+											>
+												{chat}
+											</li>
+										);
+									})}
+								</ul>
+							</>
+						)}
+					</div>
+					<div className="sidebar-info">
+						<div className="sidebar-info-upgrade">
+							<BiUser size={20} />
+							<p>Upgrade plan</p>
+						</div>
+						<div className="sidebar-info-user">
+							<BiSolidUserCircle size={20} />
+							<p>User</p>
+						</div>
+					</div>
+				</section>
 
-        <section className='main'>
-          {!currentTitle && (
-            <div className='empty-chat-container'>
-              <img
-                src='images/chatgpt-logo.svg'
-                width={45}
-                height={45}
-                alt='ChatGPT'
-              />
-              <h1>Chat GPT Clone</h1>
-              <h3>How can I help you today?</h3>
-            </div>
-          )}
+				<section className="main">
+					{!currentTitle && (
+						<div className="empty-chat-container">
+							<img
+								src="images/chatgpt-logo.svg"
+								width={45}
+								height={45}
+								alt="ChatGPT"
+							/>
+							<h1>Chat GPT Clone</h1>
+							<h3>How can I help you today?</h3>
+						</div>
+					)}
 
-          {isShowSidebar ? (
-            <MdOutlineArrowRight
-              className='burger'
-              size={28.8}
-              onClick={toggleSidebar}
-            />
-          ) : (
-            <MdOutlineArrowLeft
-              className='burger'
-              size={28.8}
-              onClick={toggleSidebar}
-            />
-          )}
-          <div className='main-header'>
-            <ul>
-              {currentChat?.map((chatMsg, idx) => {
-                const isUser = chatMsg.role === 'user';
+					{isShowSidebar ? (
+						<MdOutlineArrowRight
+							className="burger"
+							size={28.8}
+							onClick={toggleSidebar}
+						/>
+					) : (
+						<MdOutlineArrowLeft
+							className="burger"
+							size={28.8}
+							onClick={toggleSidebar}
+						/>
+					)}
+					<div className="main-header">
+						<ul>
+							{currentChat?.map((chatMsg, idx) => {
+								const isUser = chatMsg.role === "user";
 
-                return (
-                  <li key={idx} ref={scrollToLastItem}>
-                    {isUser ? (
-                      <div>
-                        <BiSolidUserCircle size={28.8} />
-                      </div>
-                    ) : (
-                      <img src='images/chatgpt-logo.svg' alt='ChatGPT' />
-                    )}
-                    {isUser ? (
-                      <div>
-                        <p className='role-title'>You</p>
-                        <p>{chatMsg.content}</p>
-                      </div>
-                    ) : (
-                      <div>
-                        <p className='role-title'>ChatGPT</p>
-                        <p>{chatMsg.content}</p>
-                      </div>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-          <div className='main-bottom'>
-            {errorText && <p className='errorText'>{errorText}</p>}
-            {errorText && (
-              <p id='errorTextHint'>
-                *You can clone the repository and use your paid OpenAI API key
-                to make this work.
-              </p>
-            )}
-            <form className='form-container' onSubmit={submitHandler}>
-              <input
-                type='text'
-                placeholder='Send a message.'
-                spellCheck='false'
-                value={isResponseLoading ? 'Processing...' : text}
-                onChange={(e) => setText(e.target.value)}
-                readOnly={isResponseLoading}
-              />
-              {!isResponseLoading && (
-                <button type='submit'>
-                  <BiSend size={20} />
-                </button>
-              )}
-            </form>
-            <p>
-              ChatGPT can make mistakes. Consider checking important
-              information.
-            </p>
-          </div>
-        </section>
-      </div>
-    </>
+								return (
+									<li key={idx} ref={scrollToLastItem}>
+										{isUser ? (
+											<div>
+												<BiSolidUserCircle
+													size={28.8}
+												/>
+											</div>
+										) : (
+											<img
+												src="images/chatgpt-logo.svg"
+												alt="ChatGPT"
+											/>
+										)}
+										{isUser ? (
+											<div>
+												<p className="role-title">
+													You
+												</p>
+												<p>{chatMsg.content}</p>
+											</div>
+										) : (
+											<div>
+												<p className="role-title">
+													ChatGPT
+												</p>
+												<p>{chatMsg.content}</p>
+											</div>
+										)}
+									</li>
+								);
+							})}
+						</ul>
+					</div>
+					<div className="main-bottom">
+						{errorText && <p className="errorText">{errorText}</p>}
+						{errorText && (
+							<p id="errorTextHint">
+								*You can clone the repository and use your paid
+								OpenAI API key to make this work.
+							</p>
+						)}
+						<form
+							className="form-container"
+							onSubmit={submitHandler}
+						>
+							<input
+								type="text"
+								placeholder="Send a message."
+								spellCheck="false"
+								value={
+									isResponseLoading ? "Processing..." : text
+								}
+								onChange={(e) => setText(e.target.value)}
+								readOnly={isResponseLoading}
+							/>
+							{!isResponseLoading && (
+								<button type="submit">
+									<BiSend size={20} />
+								</button>
+							)}
+						</form>
+						<p>
+							ChatGPT can make mistakes. Consider checking
+							important information.
+						</p>
+					</div>
+				</section>
+			</div>
+		</>
   );
 }
 

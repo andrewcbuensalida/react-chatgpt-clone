@@ -31,3 +31,11 @@ Start frontend server with vite.
 ## License
 
 [MIT License](LICENSE)
+
+node init-db.js
+
+in postgres container, connect to database with
+`psql -U your_username -d react-chatgpt-clone -p 5432`
+
+to list tables
+`\dt`

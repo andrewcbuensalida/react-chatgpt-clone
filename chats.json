@@ -1,0 +1,19 @@
+[
+	{
+		"id": "1",
+		"messages": [
+			{
+				"id": "1",
+				"role": "user",
+				"content": "Hi, I'm a Julia!",
+				"created": 1732335000
+			},
+			{
+				"id": "2",
+				"role": "assistant",
+				"content": "Hello! I'm a chatbot trained on the OpenAI GPT-3 model. How can I help you Julia?",
+				"created": 1732335000
+			}
+		]
+	}
+]
